@@ -132,10 +132,12 @@ client.on('interactionCreate', (interaction) => {
                 else if(interaction.commandName === 'removeall'){
                     cf = JSON.parse(fs.readFileSync(path))
                     cf.exams = []
-                    fs.writeFileSync(JSON.stringify(cf))    
+                    fs.writeFileSync(path, JSON.stringify(cf))
+                    interaction.reply('Removed all exams')
                 }
                 else if(interaction.commandName === 'reset'){
                     fs.rmSync(path)
+                    interaction.reply('Reset the config')
                 }
             })
         }
@@ -166,39 +168,39 @@ async function reminder() {
     const path = 'config'
     const timeout = 10000
     setTimeout(() => {
-        fs.readdir(path, (err, files) => {
-            files.forEach(async (file) => {
-                cf = JSON.parse(fs.readFileSync(`${path}/${file}`))
+        fs.readdir(path, async (err, files) => {
+            for (i = 0; i < files.length; i++) {
+                cf = JSON.parse(fs.readFileSync(`${path}/${files[i]}`))
                 chexists = await channelExists(cf.channelid)
                 if (!chexists){
-                    fs.rmSync(`${path}/${file}`)
+                    fs.rmSync(`${path}/${files[i]}`)
                 }
                 else{
-                    i = 0
+                    j = 0
                     result = '@everyone'
                     notify = false
-                    while(i < cf.exams.length){
-                        const examtime = new Date(cf.exams[i].year, cf.exams[i].month, cf.exams[i].day, cf.time.hour, cf.time.minute, 0)
-                        const remindtime = new Date(cf.exams[i].year, cf.exams[i].month, cf.exams[i].day - cf.inadvance, cf.time.hour, cf.time.minute, 0)
+                    while(j < cf.exams.length){
+                        const examtime = new Date(cf.exams[j].year, cf.exams[j].month, cf.exams[j].day, cf.time.hour, cf.time.minute, 0)
+                        const remindtime = new Date(cf.exams[j].year, cf.exams[j].month, cf.exams[j].day - cf.inadvance, cf.time.hour, cf.time.minute, 0)
                         const now = new Date()
-                        if (remindtime.getTime() <= now.getTime() && !cf.exams[i].notifiedabout) {
-                            result += (`\nThere is an upcoming ${cf.exams[i].subject} ${cf.exams[i].type} on ${cf.exams[i].year > new Date().getFullYear() ? `${cf.exams[i].year}.` : ''}${cf.exams[i].month < 9 ? '0' : ''}${cf.exams[i].month + 1}.${cf.exams[i].day < 10 ? '0' : ''}${cf.exams[i].day}.${(cf.exams[i].topic || '') === '' ? '' : ` with the topic of: ${cf.exams[i].topic}`}`)
-                            cf.exams[i].notifiedabout = true
+                        if (remindtime.getTime() <= now.getTime() && !cf.exams[j].notifiedabout) {
+                            result += (`\nThere is an upcoming ${cf.exams[j].subject} ${cf.exams[j].type} on ${cf.exams[j].year > new Date().getFullYear() ? `${cf.exams[j].year}.` : ''}${cf.exams[j].month < 9 ? '0' : ''}${cf.exams[j].month + 1}.${cf.exams[j].day < 10 ? '0' : ''}${cf.exams[j].day}.${(cf.exams[j].topic || '') === '' ? '' : ` with the topic of: ${cf.exams[j].topic}`}`)
+                            cf.exams[j].notifiedabout = true
                             notify = true
                         }
                         if (examtime.getTime() <= now.getTime()){
-                            cf.exams.splice(i, 1)
+                            cf.exams.splice(j, 1)
                         }
                         else{
-                            i++
+                            j++
                         }
                     }
                     if (notify){
                         client.channels.cache.get(cf.channelid).send(result)
                     }
-                    fs.writeFileSync(`${path}/${file}`, JSON.stringify(cf))
+                    fs.writeFileSync(`${path}/${files[i]}`, JSON.stringify(cf))
                 }
-            })
+            }
             reminder()
         })
     }, timeout)
