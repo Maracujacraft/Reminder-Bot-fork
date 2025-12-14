@@ -34,7 +34,7 @@ client.on('interactionCreate', (interaction) => {
             fs.access(path, (filedoesntexist) => {
                 if (interaction.commandName === 'config'){
                     const t = interaction.options.get('time').value
-                    if (/^(2[0-4])|([01]\d):[0-5]\d$/.test(t)){
+                    if (/^((2[0-3])|([01]\d)):[0-5]\d$/.test(t)){
                         var exams
                         if (filedoesntexist){
                             exams = []
