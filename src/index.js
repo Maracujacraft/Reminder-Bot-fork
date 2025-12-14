@@ -154,7 +154,7 @@ function toDate(datestr){
     y = today.getFullYear()
     date = new Date(y, m, d)
     if (y === date.getFullYear() && m === date.getMonth() && d === date.getDate()){
-        if(today.getMonth() >= date.getMonth() && today.getDate() >= date.getDate()){
+        if(today.getMonth() > date.getMonth() || (today.getMonth() === date.getMonth() && today.getDate() > date.getDate())){
             date = new Date(y + 1, m, d)
         }
         return date
