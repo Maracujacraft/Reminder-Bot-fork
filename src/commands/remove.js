@@ -1,4 +1,6 @@
-function remove(){
+const fs = require('fs')
+
+function remove(interaction, path){
     cf = JSON.parse(fs.readFileSync(path))
     if(cf.exams.length === 0){
         interaction.reply('There are no upcoming exams.')

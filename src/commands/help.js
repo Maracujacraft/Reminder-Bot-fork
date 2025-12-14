@@ -1,4 +1,7 @@
-function help(){
+const {EmbedBuilder} = require('discord.js')
+
+
+function help(interaction){
     const embed = new EmbedBuilder()
     .setTitle('Help')
     .addFields(

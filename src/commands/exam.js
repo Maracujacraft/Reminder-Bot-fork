@@ -1,6 +1,7 @@
 const { toDate } = require('./../index')
+const fs = require('fs')
 
-function exam(){
+function exam(interaction, path){
     var cf = JSON.parse(fs.readFileSync(path))
     
     const maxexam = 50

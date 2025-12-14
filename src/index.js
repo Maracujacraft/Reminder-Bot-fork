@@ -1,7 +1,6 @@
 require('dotenv').config()
 
-const { Message, EmbedBuilder } = require('discord.js')
-const { Client, IntentsBitField, messageLink } = require('discord.js')
+const {Client} = require('discord.js')
 const fs = require('fs')
 const { help } = require('./commands/help')
 const { config } = require('./commands/config')
@@ -26,34 +25,34 @@ client.on('clientReady', () => {
 client.on('interactionCreate', (interaction) => {
     if(interaction.isChatInputCommand()){
         if (interaction.commandName === 'help'){
-            help()
+            help(interaction)
         }
         else{
             const path = `config/${interaction.guildId}.json`
             fs.access(path, (filedoesntexist) => {
                 if (interaction.commandName === 'config'){
-                    config()
+                    config(interaction, path)
                 }
                 else if (filedoesntexist){
                     interaction.reply('Please configure the bot first!')
                 }
                 else if (interaction.commandName === 'exam'){
-                    exam()
+                    exam(interaction, path)
                 }
                 else if(interaction.commandName === 'list'){
-                    list()
+                    list(interaction, path)
                 }
                 else if(interaction.commandName === 'remove'){
-                    remove()
+                    remove(interaction, path)
                 }
                 else if(interaction.commandName === 'getconfig'){
-                    getconfig()
+                    getconfig(interaction, path)
                 }
                 else if(interaction.commandName === 'removeall'){
-                    removeall()
+                    removeall(interaction, path)
                 }
                 else if(interaction.commandName === 'reset'){
-                    reset()
+                    reset(interaction, path)
                 }
             })
         }

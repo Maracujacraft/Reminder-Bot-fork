@@ -1,4 +1,6 @@
-function config(){
+const fs = require('fs')
+
+function config(interaction, path){
     const t = interaction.options.get('time').value
     if (/^((2[0-3])|([01]\d)):[0-5]\d$/.test(t)){
         var exams
