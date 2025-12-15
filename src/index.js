@@ -31,7 +31,7 @@ client.on('interactionCreate', (interaction) => {
             const path = `config/${interaction.guildId}.json`
             fs.access(path, (filedoesntexist) => {
                 if (interaction.commandName === 'config'){
-                    config(interaction, path)
+                    config(interaction, path, filedoesntexist)
                 }
                 else if (filedoesntexist){
                     interaction.reply('Please configure the bot first!')
@@ -40,7 +40,7 @@ client.on('interactionCreate', (interaction) => {
                     exam(interaction, path)
                 }
                 else if(interaction.commandName === 'list'){
-                    list(interaction, path)
+                    list(interaction, path, client)
                 }
                 else if(interaction.commandName === 'remove'){
                     remove(interaction, path)
@@ -112,26 +112,5 @@ async function channelExists(channelId) {
     }
 }
 
-function toDate(datestr){
-    if (!/^(\d{2}\.){2}$/.test(datestr)){
-        return null
-    }
-    today = new Date()
-    m = parseInt(parseInt(datestr.slice(0, 2))) - 1
-    d = parseInt(parseInt(datestr.slice(3, 5)))
-    y = today.getFullYear()
-    date = new Date(y, m, d)
-    if (y === date.getFullYear() && m === date.getMonth() && d === date.getDate()){
-        if(today.getMonth() > date.getMonth() || (today.getMonth() === date.getMonth() && today.getDate() > date.getDate())){
-            date = new Date(y + 1, m, d)
-        }
-        return date
-    }
-    else{
-        return null
-    }
-}
-module.exports = {toDate}
 
-
-client.login(process.env.TOKEN)
+client.login(process.env.TOKEN)//

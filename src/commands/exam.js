@@ -1,4 +1,3 @@
-const { toDate } = require('./../index')
 const fs = require('fs')
 
 function exam(interaction, path){
@@ -8,8 +7,7 @@ function exam(interaction, path){
     const subjectlen = 30
     const typelen = 30
     const topiclen = 256
-    const date = toDate
-    (interaction.options.get('date').value)
+    const date = toDate(interaction.options.get('date').value)
 
     if (cf.exams !== undefined && cf.exams.length >= maxexam){
         interaction.reply(`You cannot have more than ${maxexam} exams at a time!`)
@@ -44,3 +42,23 @@ function exam(interaction, path){
     }
 }
 module.exports = {exam}
+
+function toDate(datestr){
+    if (!/^(\d{2}\.){2}$/.test(datestr)){
+        return null
+    }
+    today = new Date()
+    m = parseInt(parseInt(datestr.slice(0, 2))) - 1
+    d = parseInt(parseInt(datestr.slice(3, 5)))
+    y = today.getFullYear()
+    date = new Date(y, m, d)
+    if (y === date.getFullYear() && m === date.getMonth() && d === date.getDate()){
+        if(today.getMonth() > date.getMonth() || (today.getMonth() === date.getMonth() && today.getDate() > date.getDate())){
+            date = new Date(y + 1, m, d)
+        }
+        return date
+    }
+    else{
+        return null
+    }
+}
