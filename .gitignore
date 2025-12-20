@@ -1,5 +1,6 @@
 .env
 config/
+database.db
 
 node_modules/
 package-lock.json

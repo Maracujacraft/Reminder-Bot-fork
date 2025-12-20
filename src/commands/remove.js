@@ -1,32 +1,29 @@
 const { EmbedBuilder } = require('@discordjs/builders')
-const fs = require('fs')
+const Database = require('better-sqlite3')
+const db = new Database('database.db', {fileMustExist: true, verbose: console.log})
 
-function remove(interaction, path){
-    cf = JSON.parse(fs.readFileSync(path))
-    if(cf.exams.length === 0){
+function remove(interaction){
+    const examcnt = db
+    .prepare('SELECT COUNT(*) FROM exams WHERE guildid = ?')
+    .get(interaction.guildId)
+    if(examcnt === 0){
         const embed = new EmbedBuilder()
         .setColor(0xD80000)
         .setTitle('No upcoming exams')
-        .addFields({
-            name: '',
-            value: 'There are no upcoming exams.'
-        })
+        .setDescription('There are no upcoming exams')
         interaction.reply({embeds: [embed]})
     }
-    else if(cf.exams.length < interaction.options.get('id').value){
+    else if(examcnt < interaction.options.get('id').value){
         embed = new EmbedBuilder()
         .setColor(0xD80000)
         .setTitle('There aren\'t that many exams')
-        if(cf.exams.length === 1){
-            embed.addFields({
-                name: '',
-                value: 'There is only 1 exam'
-            })
+        if(examcnt === 1){
+            embed.setDescription('There is only 1 exam')
         }
         else{
             embed.addFields({
                 name: '',
-                value: `There are only ${cf.exams.length} exams`
+                value: `There are only ${examcnt} exams`
             })
         }
         interaction.reply({embeds: [embed]})
@@ -35,22 +32,22 @@ function remove(interaction, path){
         const embed = new EmbedBuilder()
         .setColor(0xD80000)
         .setTitle('Invalid id')
-        .addFields({
-            name: '',
-            value: 'Id mustn\'t be 0 or negative'
-        })
+        .setDescription('Id mustn\'t be 0 or negative')
         interaction.reply({embeds: [embed]})
     }
     else{
-        const subj = cf.exams[interaction.options.get('id').value - 1].subject
-        cf.exams.splice(interaction.options.get('id').value - 1, 1)
-        fs.writeFileSync(path, JSON.stringify(cf))
+        const info = db
+        .prepare('SELECT id, subject FROM (SELECT id, subject, ROW_NUMBER() OVER (ORDER BY year, month, day) AS rownum FROM exams WHERE guildid = ?) WHERE rownum = ?')
+        .get(interaction.guildId, interaction.options.get('id').value)
+        db
+        .prepare('DELETE FROM exams WHERE id = @id')
+        .run(info)
         const embed = new EmbedBuilder()
         .setColor(0x00C000)
         .setTitle('Removed exam')
         .addFields({
             name: '',
-            value: `Successfully removed ${subj} exam`
+            value: `Successfully removed ${info.subject} exam`
         })
         interaction.reply({embeds: [embed]})
     }
