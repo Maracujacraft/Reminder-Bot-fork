@@ -1,7 +1,5 @@
 require('dotenv').config()
-
 const {Client, EmbedBuilder} = require('discord.js')
-const fs = require('fs')
 const { help } = require('./commands/help')
 const { config } = require('./commands/config')
 const { exam } = require('./commands/exam')
@@ -15,6 +13,7 @@ const client = new Client({
     intents: []
 })
 const db = new Database('database.db', {fileMustExist: true})
+const timeout = process.env.TIMEOUT
 
 client.on('clientReady', () => {
     reminder()
@@ -27,7 +26,7 @@ client.on('interactionCreate', (interaction) => {
         }
         else{
             const rowexists = db
-            .prepare('SELECT COUNT(*) AS value FROM exams WHERE guildid = ?')
+            .prepare('SELECT COUNT(*) AS value FROM servers WHERE guildid = ?')
             .get(interaction.guildId).value === 1
             if (interaction.commandName === 'config'){
                 config(interaction, rowexists)
@@ -62,18 +61,17 @@ client.on('interactionCreate', (interaction) => {
 })
 
 function reminder() {
-    const timeout = 1000
     setTimeout(() => {
-        db.transaction(() => {
+        db.transaction(() => {(async () => {
             const confs = db
             .prepare('SELECT * FROM servers')
             .all()
             for (i = 0; i < confs.length; i++) {
-                const chexists = channelExists(confs[i].channelid)
+                const chexists = await channelExists(confs[i].channelid)
                 if (!chexists){
                     db
                     .prepare('DELETE FROM servers WHERE guildid = ?')
-                    .run(interaction.guildId)
+                    .run(confs[i].guildId)
                 }
                 else{
                     embed = new EmbedBuilder()
@@ -90,17 +88,17 @@ function reminder() {
                     result = []
                     sendmsg = false
                     for(let j = 0; j < exams.length; j++){
-                        const examtime = new Date(exams[j].year, exams[j].month, exams[j].day, cf.time.hour, cf.time.minute, 0)
-                        const remindtime = new Date(exams[j].year, exams[j].month, exams[j].day - cf.inadvance, cf.time.hour, cf.time.minute, 0)
+                        const examtime = new Date(exams[j].year, exams[j].month, exams[j].day, confs[i].hour, confs[i].minute, 0)
+                        const remindtime = new Date(exams[j].year, exams[j].month, exams[j].day - confs[i].inadvance, confs[i].hour, confs[i].minute, 0)
                         const now = new Date()
-                        if (remindtime <= now && !exams[j].notifiedabout) {
+                        if (remindtime.getTime() <= now.getTime() && (exams[j].notifiedabout === 0)) {
                             sendmsg = true
                             nm = `${exams[j].type} in ${exams[j].subject} on ${exams[j].year > new Date().getFullYear() ? `${exams[j].year}.` : ''}${exams[j].month < 9 ? '0' : ''}${exams[j].month + 1}.${exams[j].day < 10 ? '0' : ''}${exams[j].day}.`
                             val = exams[j].topic || ''
                             if(fieldscnt === 25 || charcnt + nm.length + val.length > 6000){
                                 result.push(embed)
                                 embed = new EmbedBuilder()
-                                .setColor(cf.embedcolor)
+                                .setColor(confs[i].embedcolor)
                                 .addFields({name: nm, value: val})
                                 fieldscnt = 0
                                 charcnt = nm.length + val.length
@@ -110,9 +108,11 @@ function reminder() {
                                 charcnt += nm.length + val.length
                                 fieldscnt++
                             }
-                            exams[j].notifiedabout = true
+                            db
+                            .prepare('UPDATE exams SET notifiedabout = ? WHERE id = ?')
+                            .run(1, exams[j].id)
                         }
-                        if (now > examtime){
+                        if (now.getTime() > examtime.getTime()){
                             db
                             .prepare('DELETE FROM exams WHERE id = ?')
                             .run(exams[j].id)
@@ -127,20 +127,19 @@ function reminder() {
                     }
                 }
             }
-        })
+        })()})()
         reminder()
     }, timeout)
 }
 
-async function channelExists(channelId) {
-    try {
-        await client.channels.fetch(channelId)
+function channelExists(channelId) {
+    return client.channels.fetch(channelId)
+    .then(() => {
         return true
-    } 
-    catch {
+    })
+    .catch(() => {
         return false
-    }
+    })
 }
-
 
 client.login(process.env.TOKEN)

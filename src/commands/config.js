@@ -7,16 +7,17 @@ function config(interaction, rowexists){
     const isvalidtime = /^((2[0-3])|([01]\d)):[0-5]\d$/.test(t)
     embedcolor = interaction.options.get('embedcolor')?.value
     if (embedcolor === undefined){
+        console.log('embedcolor is undefined ig')
         embedcolor = '#008000'
     }
-    const isvalidcolor = /^#(\d|[A-Fa-f]){6}$/.test(embedcolor)
     embed = new EmbedBuilder()
     if (!isvalidtime){
         embed.addFields({
             name: 'Invalid time',
             value: `${t} is not a valid time in HH:MM format`
         })
-    }
+    }   
+    const isvalidcolor = /^#(\d|[A-Fa-f]){6}$/.test(embedcolor)
     if (!isvalidcolor){
         embed.addFields({
             name: 'Invalid color code',
@@ -36,22 +37,12 @@ function config(interaction, rowexists){
             minute: parseInt(t.slice(3, 5)),
             inadvance: parseInt(interaction.options.get('days_in_advance').value),
             channelid: interaction.channelId,
-            embedcolor: embedcolor
+            embedcolor: Number(`0x${embedcolor.slice(1, 7)}`)
         }
         if (rowexists){
-            const oldguildid = db
-            .prepare('SELECT channelid FROM servers WHERE guildid = @guildid')
-            .get(values)
-            db.transaction(() => {
-                if(oldguildid !== interaction.guildId){
-                    db
-                    .prepare('UPDATE exams SET guildid = @guildid WHERE guildid = ?')
-                    .run(values, oldguildid)
-                }
-                db
-                .prepare('UPDATE servers SET hour = @hour, minute = @hour, inadvance = @inadvance, channelid = @channelid, embedcolor = @embedcolor WHERE guildid = @guildid')
-                .run(values)
-            })
+            db
+            .prepare('UPDATE servers SET hour = @hour, minute = @hour, inadvance = @inadvance, channelid = @channelid, embedcolor = @embedcolor WHERE guildid = @guildid')
+            .run(values)
         }
         else{
             db

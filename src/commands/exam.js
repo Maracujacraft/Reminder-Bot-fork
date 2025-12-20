@@ -9,7 +9,7 @@ function exam(interaction){
     const topiclen = 256
     const date = toDate(interaction.options.get('date').value)
 
-    const isnottoomanyexams = db.prepare('SELECT COUNT(*) FROM exams WHERE guildid = ?').get(interaction.guildId) < maxexam
+    const isnottoomanyexams = db.prepare('SELECT COUNT(*) AS value FROM exams WHERE guildid = ?').get(interaction.guildId).value < maxexam
     const isvaliddate = date !== null
     const isnottoolongsubjectlen = interaction.options.get('subject').value.length <= subjectlen
     const isnottoolongtypelen = interaction.options.get('type').value.length <= typelen
@@ -50,11 +50,11 @@ function exam(interaction){
     if (isnottoomanyexams && isvaliddate && isnottoolongsubjectlen && isnottoolongtypelen && isnottoolongtopiclen){
         const now = new Date()
         const time = db
-        .prepare('SELECT (inadvance, hour, minute) FROM servers WHERE guildid = ?')
+        .prepare('SELECT inadvance, hour, minute FROM servers WHERE guildid = ?')
         .get(interaction.guildId)
         const notifytime = new Date(date.getFullYear(), date.getMonth(), date.getDate() - time.inadvance, time.hour, time.minute, 0)
         db
-        .prepare('INSERT INTO exams (year, month, day, subject, type, topic, notifiedabout, guildid) VALUES (@year, @month, @day, @subject, @type, @topic, @notifiedabout, @guildId)')
+        .prepare('INSERT INTO exams (year, month, day, subject, type, topic, notifiedabout, guildid) VALUES (@year, @month, @day, @subject, @type, @topic, @notifiedabout, @guildid)')
         .run({
             year: date.getFullYear(),
             month: date.getMonth(),
@@ -62,8 +62,8 @@ function exam(interaction){
             subject: interaction.options.get('subject').value,
             type: interaction.options.get('type').value,
             topic: interaction.options.get('topic')?.value || '',
-            notifiedabout: now.getTime() > notifytime.getTime(),
-            guildid: this.guildId
+            notifiedabout: now.getTime() > notifytime.getTime() ? 1 : 0,
+            guildid: interaction.guildId
         })
         embed
         .setColor(0x00C000)

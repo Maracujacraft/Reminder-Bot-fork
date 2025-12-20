@@ -27,7 +27,7 @@ fs.access('database.db', (err) => {
                 subject VARCHAR(30) NOT NULL,
                 type VARCHAR(30) NOT NULL,
                 topic VARCHAR(256) NOT NULL,
-                notifiedabout BOOL NOT NULL,
+                notifiedabout INTEGER NOT NULL CHECK (notifiedabout IN (0, 1)),
                 guildid VARCHAR(25) NOT NULL REFERENCES servers(guildid) ON DELETE CASCADE
             );
         `)
