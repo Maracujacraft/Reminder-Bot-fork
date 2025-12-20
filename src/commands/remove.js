@@ -1,11 +1,10 @@
 const { EmbedBuilder } = require('@discordjs/builders')
 const Database = require('better-sqlite3')
-const fs = require('fs')
-const db = new Database('database.db', {fileMustExist: true})
+const db = new Database('database.db', {fileMustExist: true, verbose: console.log})
 
 function remove(interaction){
     const examcnt = db
-    .prepare('SELECT COUNT(*) FROM exams WHERE guildid = @guildid')
+    .prepare('SELECT COUNT(*) FROM exams WHERE guildid = ?')
     .get(interaction.guildId)
     if(examcnt === 0){
         const embed = new EmbedBuilder()
@@ -37,15 +36,18 @@ function remove(interaction){
         interaction.reply({embeds: [embed]})
     }
     else{
+        const info = db
+        .prepare('SELECT id, subject FROM (SELECT id, subject, ROW_NUMBER() OVER (ORDER BY year, month, day) AS rownum FROM exams WHERE guildid = ?) WHERE rownum = ?')
+        .get(interaction.guildId, interaction.options.get('id').value)
         db
-        .prepare('DELETE FROM (SELECT * FROM exams WHERE guildid = ? ORDER BY year, month, day) WHERE ROW_NUMBER() = ?')
-        .run(interaction.guildId, interaction.options.get('id'))
+        .prepare('DELETE FROM exams WHERE id = @id')
+        .run(info)
         const embed = new EmbedBuilder()
         .setColor(0x00C000)
         .setTitle('Removed exam')
         .addFields({
             name: '',
-            value: `Successfully removed ${subj} exam`
+            value: `Successfully removed ${info.subject} exam`
         })
         interaction.reply({embeds: [embed]})
     }
