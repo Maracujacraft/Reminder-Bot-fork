@@ -7,7 +7,6 @@ function config(interaction, rowexists){
     const isvalidtime = /^((2[0-3])|([01]\d)):[0-5]\d$/.test(t)
     embedcolor = interaction.options.get('embedcolor')?.value
     if (embedcolor === undefined){
-        console.log('embedcolor is undefined ig')
         embedcolor = '#008000'
     }
     embed = new EmbedBuilder()

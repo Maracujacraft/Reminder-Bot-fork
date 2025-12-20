@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('@discordjs/builders')
 const Database = require('better-sqlite3')
-const db = new Database('database.db', {fileMustExist: true, verbose: console.log})
+const db = new Database('database.db', {fileMustExist: true})
 
 function remove(interaction){
     const examcnt = db
