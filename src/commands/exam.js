@@ -1,16 +1,15 @@
 const { EmbedBuilder } = require('@discordjs/builders')
-const fs = require('fs')
+const Database = require('better-sqlite3')
+const db = new Database('database.db', {fileMustExist: true})
 
-function exam(interaction, path){
-    var cf = JSON.parse(fs.readFileSync(path))
-    
+function exam(interaction){
     const maxexam = 50
     const subjectlen = 30
     const typelen = 30
     const topiclen = 256
     const date = toDate(interaction.options.get('date').value)
 
-    const isnottoomanyexams = cf.exams === undefined || cf.exams.length < maxexam
+    const isnottoomanyexams = db.prepare('SELECT COUNT(*) FROM exams WHERE guildid = ?').get(interaction.guildId) < maxexam
     const isvaliddate = date !== null
     const isnottoolongsubjectlen = interaction.options.get('subject').value.length <= subjectlen
     const isnottoolongtypelen = interaction.options.get('type').value.length <= typelen
@@ -50,20 +49,22 @@ function exam(interaction, path){
     }
     if (isnottoomanyexams && isvaliddate && isnottoolongsubjectlen && isnottoolongtypelen && isnottoolongtopiclen){
         const now = new Date()
-        const notifytime = new Date(date.getFullYear(), date.getMonth(), date.getDate() - cf.inadvance, cf.time.hour, cf.time.minute, 0)
-        cf.exams.push({
-            'year': date.getFullYear(),
-            'month': date.getMonth(),
-            'day': date.getDate(),
-            'subject': interaction.options.get('subject').value,
-            'type': interaction.options.get('type').value,
-            'topic': interaction.options.get('topic')?.value || '',
-            'notifiedabout': now.getTime() > notifytime.getTime()
+        const time = db
+        .prepare('SELECT (inadvance, hour, minute) FROM servers WHERE guildid = ?')
+        .get(interaction.guildId)
+        const notifytime = new Date(date.getFullYear(), date.getMonth(), date.getDate() - time.inadvance, time.hour, time.minute, 0)
+        db
+        .prepare('INSERT INTO exams (year, month, day, subject, type, topic, notifiedabout, guildid) VALUES (@year, @month, @day, @subject, @type, @topic, @notifiedabout, @guildId)')
+        .run({
+            year: date.getFullYear(),
+            month: date.getMonth(),
+            day: date.getDate(),
+            subject: interaction.options.get('subject').value,
+            type: interaction.options.get('type').value,
+            topic: interaction.options.get('topic')?.value || '',
+            notifiedabout: now.getTime() > notifytime.getTime(),
+            guildid: this.guildId
         })
-        cf.exams.sort((a, b) => {
-            return new Date(a.year, a.month, a.day).getTime() - new Date(b.year, b.month, b.day).getTime()
-        })
-        fs.writeFileSync(path, JSON.stringify(cf))
         embed
         .setColor(0x00C000)
         .setTitle('Successfully added new exam')
@@ -81,13 +82,12 @@ function exam(interaction, path){
                 value: interaction.options.get('subject').value
             }
         )
-        if(interaction.options.get('topic') !== null){
+        if(interaction.options.get('topic') !== null){  
             embed.addFields({
                 name: 'topic',
                 value: interaction.options.get('topic').value
             })
         }
-        //interaction.reply({`Successfully added new ${interaction.options.get('type').value} on ${date.getFullYear()}.${date.getMonth() < 9 ? '0' : ''}${date.getMonth() + 1}.${date.getDate() < 10 ? '0' : ''}${date.getDate()}. in subject ${interaction.options.get('subject').value}${(interaction.options.get('topic') || '') === '' ? '' : ` with the topic of: ${interaction.options.get('topic').value}`}`)
     }
     else{
         embed
