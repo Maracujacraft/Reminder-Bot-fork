@@ -96,8 +96,9 @@ function reminder() {
                         if (remindtime.getTime() <= now.getTime() && (exam.notifiedabout === 0)) {
                             sendmsg = true
                             nm = `${exam.type} in ${exam.subject} on ${exam.year > new Date().getFullYear() ? `${exam.year}.` : ''}${exam.month < 9 ? '0' : ''}${exam.month + 1}.${exam.day < 10 ? '0' : ''}${exam.day}.`
-                            val = `${exam.topic || ''}\n${await listRoles({roles: exam.roles, ping: true})}`
-                            if(exam.roles === ''){
+                            const roleslist = await listRoles({roles: exam.roles, ping: true, guild: client.guilds.cache.get(exam.guildid)})
+                            val = `${exam.topic || ''}\n${roleslist}`
+                            if(roleslist === ''){
                                 pingeveryone = true
                             }
                             if(fieldscnt === 25 || charcnt + nm.length + val.length > 6000){

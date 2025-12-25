@@ -6,8 +6,8 @@ function spam(string, times){
     return result
 }
 
-function channelExists(client, channelId) {
-    return client.channels.fetch(channelId)
+function channelExists(client, channelid) {
+    return client.channels.fetch(channelid)
     .then(() => {
         return true
     })
@@ -23,11 +23,13 @@ async function listRoles(args){
         return ''
     }
     for (const roleid of rolesarr) {
-        if(args.ping){
-            result += `<@&${roleid}> `
-        }
-        else{
-            result += `@${await args.guild.roles.cache.get(roleid).name} `
+        if (args.guild.roles.cache.find(x => x.id === roleid) !== undefined){
+            if(args.ping){
+                result += `<@&${roleid}> `
+            }
+            else{
+                result += `@${args.guild.roles.cache.get(roleid).name} `
+            }
         }
     }
     return result
