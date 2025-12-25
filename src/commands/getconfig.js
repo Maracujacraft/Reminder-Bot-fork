@@ -10,7 +10,7 @@ function getconfig(interaction){
     const embed = new EmbedBuilder()
     .setTitle('Config')
     .setColor(0x00C000)
-    .setDescription(`I am configured to send a reminder at ${conf.hour < 10 ? '0' : ''}${conf.hour}:${conf.minute < 10 ? '0' : ''}${conf.minute}, ${conf.inadvance} days in advance, with the color of #${spam('0', 6 - conf.embedcolor.toString(16).length)}${conf.embedcolor.toString(16).toUpperCase()}, in <#${conf.channelid}>`)
+    .setDescription(`I am configured to send a reminder at ${conf.hour < 10 ? '0' : ''}${conf.hour}:${conf.minute < 10 ? '0' : ''}${conf.minute}, ${conf.inadvance} day${conf.inadvance !== 1 ? 's' : ''} in advance, with the color of #${spam('0', 6 - conf.embedcolor.toString(16).length)}${conf.embedcolor.toString(16).toUpperCase()}, in <#${conf.channelid}>`)
     interaction.reply({embeds: [embed]})
 }
 module.exports = {getconfig}
