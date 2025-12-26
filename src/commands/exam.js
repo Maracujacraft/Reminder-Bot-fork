@@ -16,8 +16,8 @@ async function exam(interaction, client){
     const isnottoolongsubjectlen = interaction.options.get('subject').value.length <= subjectlen
     const isnottoolongtypelen = interaction.options.get('type').value.length <= typelen
     const isnottoolongtopiclen = (interaction.options.get('topic')?.value || '').length <= topiclen
-    const isvalidpings = /^(<@&?\d{1,25}>)( <@&?\d{1,25}>)*$/.test(interaction.options.get('special_pings')?.value || '<@&0>')
-    const isnottoomanypings = interaction.options.get('special_pings')?.value.match(/<@&\d+>/g).length <= maxpings
+    const isvalidpings = /^<@&?\d{1,25}>( <@&?\d{1,25}>)*$/.test(interaction.options.get('special_pings')?.value || '<@&0>')
+    const isnottoomanypings = interaction.options.get('special_pings')?.value.match(/<@&?\d+>/g).length <= maxpings
 
     let embed = new EmbedBuilder()
 
