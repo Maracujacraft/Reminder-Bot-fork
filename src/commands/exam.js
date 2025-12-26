@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('@discordjs/builders')
 const Database = require('better-sqlite3')
-const { listRoles } = require('../other')
+const { listPings } = require('../other')
 const db = new Database('database.db', {fileMustExist: true})
 
 async function exam(interaction){
@@ -8,7 +8,7 @@ async function exam(interaction){
     const subjectlen = 30
     const typelen = 30
     const topiclen = 256
-    const maxroles = 10
+    const maxpings = 10
     const date = toDate(interaction.options.get('date').value)
 
     const isnottoomanyexams = db.prepare('SELECT COUNT(*) AS value FROM exams WHERE guildid = ?').get(interaction.guildId).value < maxexam
@@ -16,8 +16,8 @@ async function exam(interaction){
     const isnottoolongsubjectlen = interaction.options.get('subject').value.length <= subjectlen
     const isnottoolongtypelen = interaction.options.get('type').value.length <= typelen
     const isnottoolongtopiclen = (interaction.options.get('topic')?.value || '').length <= topiclen
-    const isvalidroles = /^(<@&\d{1,25}>)( <@&\d{1,25}>)*$/.test(interaction.options.get('special_roles')?.value || '<@&0>')
-    const isnottoomanyroles = interaction.options.get('special_roles')?.value.match(/<@&\d+>/g).length <= maxroles
+    const isvalidpings = /^(<@&\d{1,25}>)( <@&\d{1,25}>)*$/.test(interaction.options.get('special_pings')?.value || '<@&0>')
+    const isnottoomanypings = interaction.options.get('special_pings')?.value.match(/<@&\d+>/g).length <= maxpings
 
     let embed = new EmbedBuilder()
 
@@ -51,27 +51,27 @@ async function exam(interaction){
             value: `Topic longer than ${topiclen} characters!`
         })
     }
-    if (!isvalidroles){
+    if (!isvalidpings){
         embed.addFields({
-            name: 'Invalid list of roles',
-            value: 'List of roles did not match the specification'
+            name: 'Invalid list of pings',
+            value: 'List of pings did not match the specification'
         })
     }
-    else if (!isnottoomanyroles){
+    else if (!isnottoomanypings){
         embed.addFields({
-            name: 'Too many special roles',
-            value: `A maximum of ${maxroles} special roles can be specified`
+            name: 'Too many special pings',
+            value: `A maximum of ${maxpings} special pings can be specified`
         })
     }
-    if (isnottoomanyexams && isvaliddate && isnottoolongsubjectlen && isnottoolongtypelen && isnottoolongtopiclen && isvalidroles){
+    if (isnottoomanyexams && isvaliddate && isnottoolongsubjectlen && isnottoolongtypelen && isnottoolongtopiclen && isvalidpings){
         const now = new Date()
         const time = db
         .prepare('SELECT inadvance, hour, minute FROM servers WHERE guildid = ?')
         .get(interaction.guildId)
         const notifytime = new Date(date.getFullYear(), date.getMonth(), date.getDate() - time.inadvance, time.hour, time.minute, 0)
-        const rolescsv = toCsv(interaction.options.get('special_roles')?.value)
+        const pingscsv = toCsv(interaction.options.get('special_pings')?.value)
         db
-        .prepare('INSERT INTO exams (year, month, day, subject, type, topic, notifiedabout, guildid, roles) VALUES (@year, @month, @day, @subject, @type, @topic, @notifiedabout, @guildid, @roles)')
+        .prepare('INSERT INTO exams (year, month, day, subject, type, topic, notifiedabout, guildid, pings) VALUES (@year, @month, @day, @subject, @type, @topic, @notifiedabout, @guildid, @pings)')
         .run({
             year: date.getFullYear(),
             month: date.getMonth(),
@@ -81,7 +81,7 @@ async function exam(interaction){
             topic: interaction.options.get('topic')?.value || '',
             notifiedabout: now.getTime() > notifytime.getTime() ? 1 : 0,
             guildid: interaction.guildId,
-            roles: rolescsv
+            pings: pingscsv
         })
         embed
         .setColor(0x00C000)
@@ -106,10 +106,10 @@ async function exam(interaction){
                 value: interaction.options.get('topic').value
             })
         }
-        if(interaction.options.get('special_roles') !== null){  
+        if(interaction.options.get('special_pings') !== null){  
             embed.addFields({
                 name: 'pings',
-                value: await listRoles({roles: rolescsv, ping: false, guild: interaction.guild})
+                value: await listPings({pings: pingscsv, ping: false, guild: interaction.guild})
             })
         }
     }
@@ -149,7 +149,7 @@ function toCsv(string){
     }
     let result = ''
     for (let i = 0; i < list.length; i++) {
-        result += list[i].match(/\d+/)
+        result += list[i].match(/&\d+/)
         if (i < (list.length - 1)){
             result += ','
         }

@@ -9,7 +9,7 @@ const { getconfig } = require('./commands/getconfig')
 const { removeall } = require('./commands/removeall')
 const { reset } = require('./commands/reset')
 const Database = require('better-sqlite3')
-const { channelExists, listRoles } = require('./other')
+const { channelExists, listPings } = require('./other')
 const client = new Client({
     intents: [
         IntentsBitField.Flags.Guilds]
@@ -96,9 +96,9 @@ function reminder() {
                         if (remindtime.getTime() <= now.getTime() && (exam.notifiedabout === 0)) {
                             sendmsg = true
                             nm = `${exam.type} in ${exam.subject} on ${exam.year > new Date().getFullYear() ? `${exam.year}.` : ''}${exam.month < 9 ? '0' : ''}${exam.month + 1}.${exam.day < 10 ? '0' : ''}${exam.day}.`
-                            const roleslist = await listRoles({roles: exam.roles, ping: true, guild: client.guilds.cache.get(exam.guildid)})
-                            val = `${exam.topic || ''}\n${roleslist}`
-                            if(roleslist === ''){
+                            const pingslist = await listPings({pings: exam.pings, ping: true, guild: client.guilds.cache.get(exam.guildid)})
+                            val = `${exam.topic || ''}\n${pingslist}`
+                            if(pingslist === ''){
                                 pingeveryone = true
                             }
                             if(fieldscnt === 25 || charcnt + nm.length + val.length > 6000){

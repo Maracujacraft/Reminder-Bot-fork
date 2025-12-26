@@ -16,23 +16,23 @@ function channelExists(client, channelid) {
     })
 }
 
-async function listRoles(args){
+async function listPings(args){
     let result = ''
-    const rolesarr = args.roles.split(',')
-    if (rolesarr[0] === ''){
+    const pingsarr = args.pings.split(',')
+    if (pingsarr[0] === ''){
         return ''
     }
-    for (const roleid of rolesarr) {
-        if (args.guild.roles.cache.find(x => x.id === roleid) !== undefined){
+    for (const pingid of pingsarr) {
+        if (args.guild.pings.cache.find(x => x.id === pingid) !== undefined){
             if(args.ping){
-                result += `<@&${roleid}> `
+                result += `<@&${pingid}> `
             }
             else{
-                result += `@${args.guild.roles.cache.get(roleid).name} `
+                result += `@${args.guild.pings.cache.get(pingid).name} `
             }
         }
     }
     return result
 }
 
-module.exports = {spam, channelExists, listRoles}
+module.exports = {spam, channelExists, listPings: listPings}

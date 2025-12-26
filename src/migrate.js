@@ -29,7 +29,7 @@ fs.access('database.db', (err) => {
                 topic TEXT NOT NULL,
                 notifiedabout INTEGER NOT NULL CHECK (notifiedabout IN (0, 1)),
                 guildid TEXT NOT NULL REFERENCES servers(guildid) ON DELETE CASCADE,
-                roles TEXT NOT NULL
+                pings TEXT NOT NULL
             );
         `)
         console.log('Successfully created database!')
