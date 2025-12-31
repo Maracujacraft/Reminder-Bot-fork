@@ -23,7 +23,6 @@ async function listPings(args){
         return ''
     }
     for (const pingid of pingsarr) {
-        console.log(pingid)
         if (pingid.slice(0, 1) === '&'){
             const roleid = pingid.slice(1, pingid.length)
             if (args.guild.roles.cache.find(x => x.id === roleid) !== undefined){
