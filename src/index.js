@@ -91,7 +91,7 @@ function reminder() {
                     let result = []
                     let sendmsg = false
                     for (const exam of exams) {
-                        const examtime = new Date(exam.year, exam.month, exam.day, confs[i].hour, confs[i].minute, 0)
+                        const deletetime = new Date(exam.year, exam.month, exam.day + 1, 0, 0, 0)
                         const remindtime = new Date(exam.year, exam.month, exam.day - confs[i].inadvance, confs[i].hour, confs[i].minute, 0)
                         const now = new Date()
                         if (remindtime.getTime() <= now.getTime() && (exam.notifiedabout === 0)) {
@@ -119,7 +119,7 @@ function reminder() {
                             .prepare('UPDATE exams SET notifiedabout = ? WHERE id = ?')
                             .run(1, exam.id)
                         }
-                        if (now.getTime() > examtime.getTime()){
+                        if (now.getTime() > deletetime.getTime()){
                             db
                             .prepare('DELETE FROM exams WHERE id = ?')
                             .run(exam.id)
