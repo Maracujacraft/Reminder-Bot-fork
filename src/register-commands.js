@@ -130,6 +130,12 @@ const commands = [
                 required: false
             },
             {
+                name: 'listroles',
+                description: 'Who can use /listroles.',
+                type: ApplicationCommandOptionType.String,
+                required: false
+            },
+            {
                 name: 'manageroles',
                 description: 'Who can use /manageroles.',
                 type: ApplicationCommandOptionType.String,
