@@ -82,13 +82,8 @@ async function exam(interaction, client){
         }
         embed
         .setColor(0x00C000)
-<<<<<<< Updated upstream
         .setTitle('Successfully added new exam')
         .setDescription(result)
-=======
-        .setTitle('Successfully Added New Exam ✅')
-        .addFields({name: nm, value: val})
->>>>>>> Stashed changes
     }
     else{
         embed
